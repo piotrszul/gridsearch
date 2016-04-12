@@ -30,9 +30,9 @@ def _job_def():
 		return xgb.DMatrix( X_all, label=y_all)
 
 	def grid():
-		return list(ParameterGrid({'max_depth':[3,4], 'eta':[0.05], 'subsample':[0.75],'colsample_bylevel':[1]}))
+		return list(ParameterGrid({'max_depth':[1,5,7,10,20], 'eta':[0.1, 0.05, 0.01, 0.005], 'subsample':[0.05, 0.75,1],'colsample_bylevel':[0.75, 1]}))
 
-	return (_complete(grid,xbg_defaults) ,xgb_cv_task(get_data, num_round=20))
+	return (_complete(grid,xbg_defaults) ,xgb_cv_task(get_data, num_round=3000, nthread=16, nfold=5))
 
 
 def test():
@@ -40,9 +40,11 @@ def test():
 	print sys.path
 
 def grid_show():
-	grid,task = _job_def()
-	for params in  grid():
+	grid_f,task = _job_def()
+	grid = grid_f()	
+	for params in  grid:
 		print params
+	print "Total size: %s" % len(grid)
 
 def _execute(param, task_f):
 		print "Running for params: %s" % param
@@ -74,4 +76,7 @@ def merge():
 	df.to_csv(os.path.join('tmp','result.csv'), index=False)	
 
 
-
+def report():
+	df = pd.read_csv(os.path.join('tmp','result.csv'))
+	sorted_df = df.sort(['aux.test-auc-mean'], ascending=False)
+	print sorted_df[0:20]

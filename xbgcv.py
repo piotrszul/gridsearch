@@ -22,8 +22,8 @@ DEF_BST_PARAMS = {'eta':0.3,
 def xbg_defaults():
   return DEF_BST_PARAMS
 
-def xgb_cv(data, bst_params={}, num_round=10, nfold=3):
-    this_params = {'silent':1, 'objective':'binary:logistic', 'seed':10, 'eval_metric':'auc', 'nthread':4 }
+def xgb_cv(data, bst_params={}, num_round=10, nfold=3, nthread=1):
+    this_params = {'silent':1, 'objective':'binary:logistic', 'seed':10, 'eval_metric':'auc', 'nthread':nthread }
     this_bst_params = DEF_BST_PARAMS.copy()
     this_bst_params.update(bst_params)
     this_params.update(dict(map(lambda (k,v): ('bst:' + k, v), this_bst_params.items())))
@@ -31,7 +31,7 @@ def xgb_cv(data, bst_params={}, num_round=10, nfold=3):
     print this_bst_params
     cv_model = xgb.cv(this_params, data, num_round, 
                       nfold=nfold,metrics=['auc'], seed = 0, show_progress=10, early_stopping_rounds=20)
-    best_iter = np.argmax(cv_model['test-auc-mean'])
+    best_iter = int(np.argmax(cv_model['test-auc-mean']))
     print best_iter
     return cv_model, best_iter, this_bst_params
     
